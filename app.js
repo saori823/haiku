@@ -179,9 +179,40 @@ function displayKigos(kigoArray) {
 }
 
 // 検索ボタンの処理
-document.getElementById("search-btn").addEventListener("click", () => {
-  const searchTheme = document.getElementById("search-theme").value;
-  const searchSeason = document.getElementById("search-season").value;
+// 検索ボタンの処理
+document.getElementById('search-btn').addEventListener('click', () => {
+  const searchTheme = document.getElementById('search-theme').value;
+  const searchSeason = document.getElementById('search-season').value;
+
+  // 読み込み済みのデータから条件に合うものを絞り込む
+  const filtered = allHaikus.filter(h => {
+    const matchTheme = searchTheme === "" || h.theme === searchTheme;
+    const matchSeason = searchSeason === "" || h.season === searchSeason;
+    return matchTheme && matchSeason;
+  });
+
+  displayHaikus(filtered);
+
+  // ▼▼ ここから追加：選択された季節に合わせて背景色を変える処理 ▼▼
+  document.body.className = ''; // 一度すべての季節クラスをリセット
+  
+  if (searchSeason === "春") {
+    document.body.classList.add("theme-spring");
+  } else if (searchSeason === "夏") {
+    document.body.classList.add("theme-summer");
+  } else if (searchSeason === "秋") {
+    document.body.classList.add("theme-autumn");
+  } else if (searchSeason === "冬") {
+    document.body.classList.add("theme-winter");
+  }
+  // 「すべて」を選んだ場合は、基本の緑（何もクラスをつけない）に戻ります
+});
+
+// ▼おまけ：「投稿画面」や「一覧」を開き直したときに、元の緑色に戻す処理
+document.getElementById('nav-post').addEventListener('click', () => {
+  document.body.className = ''; 
+  showPage('page-post');
+});
 
   // 読み込み済みのデータから条件に合うものを絞り込む
   const filtered = allHaikus.filter((h) => {
