@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Web投句箱</title>
+    <style>
+      /* 画面の切り替え用のスタイル */
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+      }
+      .error-list {
+        color: red;
+      }
+      nav {
+        margin-bottom: 20px;
+      }
+      nav button {
+        margin-right: 10px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <button id="nav-post">新しい句を投稿する</button>
+      <button id="nav-list">投稿された俳句一覧を見る</button>
+    </nav>
+    <hr />
+
+    <div id="page-post" class="page active">
+      <h1>Web投句箱</h1>
+      <ul id="error-messages" class="error-list"></ul>
+
+      <p>
+        題を選択してください
+        <select id="theme">
+          <option>旅</option>
+          <option>自然</option>
+          <option>家族</option>
+          <option>音楽</option>
+          <option>食べ物</option>
+        </select>
+      </p>
+      <p>
+        季節を選択してください
+        <select id="season">
+          <option>春</option>
+          <option>夏</option>
+          <option>秋</option>
+          <option>冬</option>
+        </select>
+      </p>
+      <p>俳号:<input type="text" id="haigou" /></p>
+      <p>俳句:<input type="text" id="haiku" /></p>
+      <p>俳句に用いた季語:<input type="text" id="kigo" /></p>
+      <p>
+        俳句に関する解説(200字以内でお願いします。)<br />
+        <textarea id="comments" rows="5" cols="40"></textarea>
+      </p>
+      <button id="submit-btn">投稿する</button>
+    </div>
+
+    <div id="page-list" class="page">
+      <h1>投稿された俳句一覧</h1>
+      <p>
+        題：
+        <select id="search-theme">
+          <option value="">すべて</option>
+          <option>旅</option>
+          <option>自然</option>
+          <option>家族</option>
+          <option>音楽</option>
+          <option>食べ物</option>
+        </select>
+        季節：
+        <select id="search-season">
+          <option value="">すべて</option>
+          <option>春</option>
+          <option>夏</option>
+          <option>秋</option>
+          <option>冬</option>
+        </select>
+        <button id="search-btn">検索</button>
+      </p>
+      <hr />
+      <ul id="haiku-list-container"></ul>
+
+      <h2>収集された季語</h2>
+      <ul id="kigo-list-container"></ul>
+    </div>
+
+    <div id="page-detail" class="page">
+      <h1>俳句の詳細</h1>
+      <div id="detail-content"></div>
+      <br />
+      <button id="back-to-list-btn">投稿された俳句一覧にもどる</button>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
