@@ -99,6 +99,13 @@
       body.theme-winter button {
         background-color: #4682b4;
       }
+
+      /* エラーリストのスタイル */
+      .error-list {
+        color: #e63946;
+        list-style: none;
+        padding-left: 0;
+      }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -148,7 +155,7 @@
     </div>
 
     <div id="page-list" class="page">
-      <h1>投稿された俳句一覧</h1>
+      <h1 id="list-top">投稿された俳句一覧</h1>
       <p>
         題：
         <select id="search-theme">
@@ -168,12 +175,25 @@
           <option>冬</option>
         </select>
         <button id="search-btn">検索</button>
+        <button
+          id="jump-to-kigo-btn"
+          style="margin-left: 10px; background-color: #666"
+        >
+          収集された季語はこちら
+        </button>
       </p>
       <hr />
       <ul id="haiku-list-container"></ul>
 
-      <h2>収集された季語</h2>
+      <h2 id="kigo-section">収集された季語</h2>
       <ul id="kigo-list-container"></ul>
+
+      <button
+        id="back-to-top-btn"
+        style="background-color: #666; margin-top: 20px"
+      >
+        ページトップへ戻る
+      </button>
     </div>
 
     <div id="page-detail" class="page">

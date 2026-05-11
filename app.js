@@ -1,4 +1,5 @@
 // Firebaseの機能を読み込む
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import {
   getFirestore,
@@ -10,6 +11,7 @@ import {
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
+// Firebaseの設定（ご自身のものに書き換えてください）
 const firebaseConfig = {
   apiKey: "AIzaSyCciyJzSAnQMefY9iBa8FR5fPeubPLv45o",
   authDomain: "haiku-app-e9f90.firebaseapp.com",
@@ -23,7 +25,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 画面を切り替える関数
+let allHaikus = [];
+let allKigos = []; // すべての季語を保持する変数
+
 function showPage(pageId) {
   document
     .querySelectorAll(".page")
@@ -31,21 +35,30 @@ function showPage(pageId) {
   document.getElementById(pageId).classList.add("active");
 }
 
-// ナビゲーションのイベント設定
-document
-  .getElementById("nav-post")
-  .addEventListener("click", () => showPage("page-post"));
+// ナビゲーション
+document.getElementById("nav-post").addEventListener("click", () => {
+  document.body.className = "";
+  showPage("page-post");
+});
 document.getElementById("nav-list").addEventListener("click", () => {
   showPage("page-list");
-  loadHaikus(); // 一覧画面を開くときにデータを読み込む
+  loadHaikus();
 });
 document
   .getElementById("back-to-list-btn")
   .addEventListener("click", () => showPage("page-list"));
 
-// ==============================
-// 投稿処理 (posted_haiku.rb の代わり)
-// ==============================
+// ページ内ジャンプの処理
+document.getElementById("jump-to-kigo-btn").addEventListener("click", () => {
+  document
+    .getElementById("kigo-section")
+    .scrollIntoView({ behavior: "smooth" });
+});
+document.getElementById("back-to-top-btn").addEventListener("click", () => {
+  document.getElementById("list-top").scrollIntoView({ behavior: "smooth" });
+});
+
+// 投稿処理
 document.getElementById("submit-btn").addEventListener("click", async () => {
   const theme = document.getElementById("theme").value;
   const season = document.getElementById("season").value;
@@ -55,23 +68,15 @@ document.getElementById("submit-btn").addEventListener("click", async () => {
   const comments = document.getElementById("comments").value.trim();
 
   const errorList = document.getElementById("error-messages");
-  errorList.innerHTML = ""; // エラーをリセット
+  errorList.innerHTML = "";
   let errors = [];
 
-  // バリデーション（入力チェック）
-  if (!haigou || !haiku || !kigo || !comments) {
-    errors.push("俳号、俳句、季語、解説のいずれかが入力されていません。");
-  }
-  if (comments.length > 200) {
-    errors.push("解説は200字以内で入力してください。");
-  }
-  if (haiku.length > 0 && haiku.length < 5) {
-    errors.push("俳句が短すぎます（5文字以上にしてください）");
-  } else if (haiku.length > 30) {
-    errors.push("俳句が長すぎます（30文字以内にしてください）");
-  }
+  if (!haigou || !haiku || !kigo || !comments)
+    errors.push("未入力項目があります。");
+  if (comments.length > 200) errors.push("解説は200字以内で。");
+  if (haiku.length > 0 && haiku.length < 5) errors.push("俳句が短すぎます。");
+  if (haiku.length > 30) errors.push("俳句が長すぎます。");
 
-  // エラーがあれば表示して終了
   if (errors.length > 0) {
     errors.forEach((e) => {
       const li = document.createElement("li");
@@ -81,167 +86,147 @@ document.getElementById("submit-btn").addEventListener("click", async () => {
     return;
   }
 
-  // Firebaseにデータを保存
   try {
     await addDoc(collection(db, "haikus"), {
-      theme: theme,
-      season: season,
-      haigou: haigou,
-      haiku: haiku,
-      kigo: kigo,
-      comments: comments,
-      createdAt: serverTimestamp(), // 投稿時間を記録
+      theme,
+      season,
+      haigou,
+      haiku,
+      kigo,
+      comments,
+      createdAt: serverTimestamp(),
     });
-
-    alert("俳句の投稿が完了しました！");
-    // 入力欄を空にする
+    alert("投稿完了！");
     document.getElementById("haigou").value = "";
     document.getElementById("haiku").value = "";
     document.getElementById("kigo").value = "";
     document.getElementById("comments").value = "";
-
-    // 一覧画面に移動
     showPage("page-list");
     loadHaikus();
-  } catch (error) {
-    console.error("エラー:", error);
-    alert("投稿に失敗しました。");
+  } catch (e) {
+    alert("失敗しました。");
   }
 });
 
-// ==============================
-// 一覧・検索処理 (view_haiku.rb, search_haiku.rb の代わり)
-// ==============================
-let allHaikus = []; // 読み込んだすべての俳句を保持しておく変数
-
+// データ読み込み
 async function loadHaikus() {
   const listContainer = document.getElementById("haiku-list-container");
   listContainer.innerHTML = "読み込み中...";
-
   try {
-    // データベースから新しい順(createdAtの降順)でデータを取得
     const q = query(collection(db, "haikus"), orderBy("createdAt", "desc"));
     const querySnapshot = await getDocs(q);
-
     allHaikus = [];
-    let uniqueKigos = new Set(); // 重複しない季語を集めるためのセット
-
+    let uniqueKigos = new Set();
     querySnapshot.forEach((doc) => {
       const data = doc.data();
       allHaikus.push({ id: doc.id, ...data });
-      if (data.season && data.kigo) {
+      if (data.season && data.kigo)
         uniqueKigos.add(`${data.season}：${data.kigo}`);
-      }
     });
-
+    allKigos = Array.from(uniqueKigos); // グローバル変数に保存
     displayHaikus(allHaikus);
-    displayKigos(Array.from(uniqueKigos));
-  } catch (error) {
-    console.error("読み込みエラー:", error);
-    listContainer.innerHTML = "データの読み込みに失敗しました。";
+    displayKigos(allKigos); // 初回はすべて表示
+  } catch (e) {
+    listContainer.innerHTML = "失敗しました。";
   }
 }
 
-// 俳句を画面に表示する関数
 function displayHaikus(haikuArray) {
   const listContainer = document.getElementById("haiku-list-container");
   listContainer.innerHTML = "";
-
   if (haikuArray.length === 0) {
-    listContainer.innerHTML = "<p>該当する俳句がありません。</p>";
+    listContainer.innerHTML = "<p>ありません。</p>";
     return;
   }
-
-  haikuArray.forEach((haikuData) => {
+  haikuArray.forEach((h) => {
     const li = document.createElement("li");
-    // リンク風のテキストを作成（クリックで詳細画面へ）
     const a = document.createElement("a");
     a.href = "javascript:void(0)";
-    a.textContent = haikuData.haiku;
-    a.onclick = () => showDetail(haikuData);
-
+    a.textContent = h.haiku;
+    a.onclick = () => showDetail(h);
     li.appendChild(a);
-    li.append(` （${haikuData.theme}・${haikuData.season}）`);
+    li.append(` （${h.theme}・${h.season}）`);
     listContainer.appendChild(li);
   });
 }
 
-// 季語を画面に表示する関数
-function displayKigos(kigoArray) {
+// 季語の表示（ソートとフィルタリング機能付き）
+function displayKigos(kigoArray, filterSeason = "") {
   const kigoContainer = document.getElementById("kigo-list-container");
   kigoContainer.innerHTML = "";
-  // 季節順に並び替え
-  kigoArray.sort().forEach((kigoText) => {
-    const li = document.createElement("li");
-    li.textContent = kigoText;
-    kigoContainer.appendChild(li);
-  });
+
+  const seasonOrder = { 春: 1, 夏: 2, 秋: 3, 冬: 4 };
+
+  // 1. フィルタリング
+  let displayArray = kigoArray;
+  if (filterSeason !== "") {
+    displayArray = kigoArray.filter((k) => k.startsWith(filterSeason));
+  }
+
+  // 2. ソート（春夏秋冬の順）
+  displayArray
+    .sort((a, b) => {
+      const sA = a.split("：")[0];
+      const sB = b.split("：")[0];
+      if (seasonOrder[sA] !== seasonOrder[sB]) {
+        return (seasonOrder[sA] || 9) - (seasonOrder[sB] || 9);
+      }
+      return a.localeCompare(b); // 同じ季節内はあいうえお順
+    })
+    .forEach((k) => {
+      const li = document.createElement("li");
+      li.textContent = k;
+      kigoContainer.appendChild(li);
+    });
 }
 
-// 検索ボタンの処理
-// 検索ボタンの処理
+// 検索ボタン
 document.getElementById("search-btn").addEventListener("click", () => {
   const searchTheme = document.getElementById("search-theme").value;
   const searchSeason = document.getElementById("search-season").value;
 
-  // 読み込み済みのデータから条件に合うものを絞り込む
-  const filtered = allHaikus.filter((h) => {
-    const matchTheme = searchTheme === "" || h.theme === searchTheme;
-    const matchSeason = searchSeason === "" || h.season === searchSeason;
-    return matchTheme && matchSeason;
+  const filteredHaikus = allHaikus.filter((h) => {
+    return (
+      (searchTheme === "" || h.theme === searchTheme) &&
+      (searchSeason === "" || h.season === searchSeason)
+    );
   });
 
-  displayHaikus(filtered);
+  displayHaikus(filteredHaikus);
+  displayKigos(allKigos, searchSeason); // 季語も同じ季節でフィルタリング
 
-  // ▼▼ ここから追加：選択された季節に合わせて背景色を変える処理 ▼▼
-  document.body.className = ""; // 一度すべての季節クラスをリセット
-
-  if (searchSeason === "春") {
-    document.body.classList.add("theme-spring");
-  } else if (searchSeason === "夏") {
-    document.body.classList.add("theme-summer");
-  } else if (searchSeason === "秋") {
-    document.body.classList.add("theme-autumn");
-  } else if (searchSeason === "冬") {
-    document.body.classList.add("theme-winter");
-  }
-  // 「すべて」を選んだ場合は、基本の緑（何もクラスをつけない）に戻ります
-});
-
-// ▼おまけ：「投稿画面」や「一覧」を開き直したときに、元の緑色に戻す処理
-document.getElementById("nav-post").addEventListener("click", () => {
   document.body.className = "";
-  showPage("page-post");
+  if (searchSeason) {
+    const themeMap = {
+      春: "theme-spring",
+      夏: "theme-summer",
+      秋: "theme-autumn",
+      冬: "theme-winter",
+    };
+    document.body.classList.add(themeMap[searchSeason]);
+  }
 });
-// ==============================
-// 詳細表示処理 (haiku_detail.rb の代わり)
-// ==============================
-function showDetail(haikuData) {
+
+// 詳細表示
+function showDetail(h) {
   const detailContainer = document.getElementById("detail-content");
-
-  // HTMLエスケープ処理（安全に表示するため）
-  const escapeHTML = (str) => {
-    if (!str) return "";
-    return str.replace(/[&'`"<>]/g, function (match) {
-      return {
-        "&": "&amp;",
-        "'": "&#x27;",
-        "`": "&#x60;",
-        '"': "&quot;",
-        "<": "&lt;",
-        ">": "&gt;",
-      }[match];
-    });
-  };
-
+  const escape = (str) =>
+    str
+      ? str.replace(
+          /[&'`"<>]/g,
+          (m) =>
+            ({
+              "&": "&amp;",
+              "'": "&#x27;",
+              "`": "&#x60;",
+              '"': "&quot;",
+              "<": "&lt;",
+              ">": "&gt;",
+            })[m],
+        )
+      : "";
   detailContainer.innerHTML = `
-    <p><b>題：</b>${escapeHTML(haikuData.theme)}</p>
-    <p><b>季節：</b>${escapeHTML(haikuData.season)}</p>
-    <p><b>俳号：</b>${escapeHTML(haikuData.haigou)}</p>
-    <p><b>俳句：</b><br>${escapeHTML(haikuData.haiku)}</p>
-    <p><b>季語：</b>${escapeHTML(haikuData.kigo)}</p>
-    <p><b>解説：</b><br>${escapeHTML(haikuData.comments)}</p>
-  `;
-
+    <p><b>題：</b>${escape(h.theme)}</p><p><b>季節：</b>${escape(h.season)}</p><p><b>俳号：</b>${escape(h.haigou)}</p>
+    <p><b>俳句：</b><br>${escape(h.haiku)}</p><p><b>季語：</b>${escape(h.kigo)}</p><p><b>解説：</b><br>${escape(h.comments)}</p>`;
   showPage("page-detail");
 }
