@@ -180,12 +180,12 @@ function displayKigos(kigoArray) {
 
 // 検索ボタンの処理
 // 検索ボタンの処理
-document.getElementById('search-btn').addEventListener('click', () => {
-  const searchTheme = document.getElementById('search-theme').value;
-  const searchSeason = document.getElementById('search-season').value;
+document.getElementById("search-btn").addEventListener("click", () => {
+  const searchTheme = document.getElementById("search-theme").value;
+  const searchSeason = document.getElementById("search-season").value;
 
   // 読み込み済みのデータから条件に合うものを絞り込む
-  const filtered = allHaikus.filter(h => {
+  const filtered = allHaikus.filter((h) => {
     const matchTheme = searchTheme === "" || h.theme === searchTheme;
     const matchSeason = searchSeason === "" || h.season === searchSeason;
     return matchTheme && matchSeason;
@@ -194,8 +194,8 @@ document.getElementById('search-btn').addEventListener('click', () => {
   displayHaikus(filtered);
 
   // ▼▼ ここから追加：選択された季節に合わせて背景色を変える処理 ▼▼
-  document.body.className = ''; // 一度すべての季節クラスをリセット
-  
+  document.body.className = ""; // 一度すべての季節クラスをリセット
+
   if (searchSeason === "春") {
     document.body.classList.add("theme-spring");
   } else if (searchSeason === "夏") {
@@ -209,21 +209,10 @@ document.getElementById('search-btn').addEventListener('click', () => {
 });
 
 // ▼おまけ：「投稿画面」や「一覧」を開き直したときに、元の緑色に戻す処理
-document.getElementById('nav-post').addEventListener('click', () => {
-  document.body.className = ''; 
-  showPage('page-post');
+document.getElementById("nav-post").addEventListener("click", () => {
+  document.body.className = "";
+  showPage("page-post");
 });
-
-  // 読み込み済みのデータから条件に合うものを絞り込む
-  const filtered = allHaikus.filter((h) => {
-    const matchTheme = searchTheme === "" || h.theme === searchTheme;
-    const matchSeason = searchSeason === "" || h.season === searchSeason;
-    return matchTheme && matchSeason;
-  });
-
-  displayHaikus(filtered);
-});
-
 // ==============================
 // 詳細表示処理 (haiku_detail.rb の代わり)
 // ==============================
