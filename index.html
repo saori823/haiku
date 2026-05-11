@@ -4,24 +4,108 @@
     <meta charset="UTF-8" />
     <title>Web投句箱</title>
     <style>
-      /* 画面の切り替え用のスタイル */
+      /* 全体の基本設定（和の雰囲気） */
+      body {
+        font-family: "Noto Sans JP", sans-serif;
+        background-color: #fcfaf2; /* 生成り（ベースの背景） */
+        color: #333;
+        margin: 0;
+        padding: 20px;
+        transition: background-color 0.8s ease; /* じんわり色が変わるアニメーション */
+      }
+      h1,
+      h2 {
+        font-family: "Noto Serif JP", serif; /* 見出しは明朝体 */
+        color: #005e15; /* 基本の緑色 */
+        border-bottom: 2px solid #005e15;
+        padding-bottom: 10px;
+      }
+      /* ボタンやナビゲーション */
+      button {
+        font-family: "Noto Sans JP", sans-serif;
+        background-color: #005e15;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: opacity 0.3s;
+      }
+      button:hover {
+        opacity: 0.8;
+      }
       .page {
         display: none;
       }
       .page.active {
         display: block;
       }
-      .error-list {
-        color: red;
+      ul {
+        line-height: 1.8; /* 行間を広げて読みやすく */
       }
-      nav {
-        margin-bottom: 20px;
+      li {
+        margin-bottom: 10px;
       }
-      nav button {
-        margin-right: 10px;
-        cursor: pointer;
+
+      /* ====== 季節ごとのテーマ設定 ====== */
+      /* 春：桜のような淡いピンク */
+      body.theme-spring {
+        background-color: #fff0f5;
+      }
+      body.theme-spring h1,
+      body.theme-spring h2 {
+        color: #d783a1;
+        border-color: #d783a1;
+      }
+      body.theme-spring button {
+        background-color: #d783a1;
+      }
+
+      /* 夏：鮮やかな萌葱色 */
+      body.theme-summer {
+        background-color: #f0fff0;
+      }
+      body.theme-summer h1,
+      body.theme-summer h2 {
+        color: #228b22;
+        border-color: #228b22;
+      }
+      body.theme-summer button {
+        background-color: #228b22;
+      }
+
+      /* 秋：紅葉のような茜色 */
+      body.theme-autumn {
+        background-color: #fff5ee;
+      }
+      body.theme-autumn h1,
+      body.theme-autumn h2 {
+        color: #c3512f;
+        border-color: #c3512f;
+      }
+      body.theme-autumn button {
+        background-color: #c3512f;
+      }
+
+      /* 冬：凛とした雪のような青白さ */
+      body.theme-winter {
+        background-color: #f0f8ff;
+      }
+      body.theme-winter h1,
+      body.theme-winter h2 {
+        color: #4682b4;
+        border-color: #4682b4;
+      }
+      body.theme-winter button {
+        background-color: #4682b4;
       }
     </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <nav>
